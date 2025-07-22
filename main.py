@@ -16,11 +16,12 @@ pictures = folder / "pictures"
 compressed = folder / "compressed"
 financial = folder / "financial"
 
-user_option = input("To organise this folder once (y), to continously organise (c): ").strip().lower()
-
 if not folder.exists():
     print(f"The folder '{folder}' does not exist.")
     exit()
+
+
+user_option = input("To organise this folder once (y), to continously organise (c): ").strip().lower()
 
 if user_option == 'y':
     print("Organising the folder once...")
