@@ -9,7 +9,7 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-folder = Path(args.folder)
+folder = Path(args.folder).resolve()
 
 document = folder / "documents"
 pictures = folder / "pictures"
