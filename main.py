@@ -34,7 +34,7 @@ if u_input == "b":
     print("Customise extension")
     ext_name = input("Extension name: ").lower().strip()
     dir_name = input("Customise folder name: ").strip()
-    # ext_to_folder[ext_name] = dir_name
+    
     user_rule[ext_name] = dir_name
 
 user_option = (
