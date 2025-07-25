@@ -9,20 +9,33 @@ parser.add_argument(
     "-f", "--folder", help="Enter the name of folder you intend to organise"
 )
 
+categories = {
+    "documents": [".txt", ".pdf", ".docx", ".xlsx", ".pptx"],
+    "pictures": [".jpg", ".jpeg", ".png", ".gif", ".bmp"],
+    "compressed": [".zip", ".rar", ".tar", ".gz"],
+}
+
+ext_to_folder = {}
 
 args = parser.parse_args()
 
-folder = Path(args.folder).resolve()
+folder = Path(args.folder).resolve() if args.folder else Path.cwd()
 
-document = folder / "documents"
-pictures = folder / "pictures"
-compressed = folder / "compressed"
-financial = folder / "financial"
 
 if not folder.exists():
     print(f"The folder '{folder}' does not exist.")
     exit()
 
+
+u_input = input("To coustomize rules enter (b), to skip (Enter): ")
+
+user_rule = {}
+if u_input == "b":
+    print("Customise extension")
+    ext_name = input("Extension name: ").lower().strip()
+    dir_name = input("Customise folder name: ").strip()
+    # ext_to_folder[ext_name] = dir_name
+    user_rule[ext_name] = dir_name
 
 user_option = (
     input("To organise this folder once (y), to continously organise (c): ")
@@ -32,55 +45,79 @@ user_option = (
 
 if user_option == "y":
     print("Organising the folder once...")
-    for file in folder.iterdir():
-        if file.is_dir():
-            continue
-        elif file.suffix.lower() in [".txt", ".pdf", ".docx", ".xlsx", ".pptx"]:
-            document.mkdir(parents=True, exist_ok=True)
-            shutil.move(file, (document / file.name))
 
-        elif file.suffix.lower() in [".jpg", ".jpeg", ".png", ".gif", ".bmp"]:
-            pictures.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(file), str(pictures / file.name))
+    for folder_name, extensions in categories.items():
+        for ext in extensions:
+            ext_to_folder[ext] = folder_name
 
-        elif file.suffix.lower() in [".zip", ".rar", ".tar", ".gz"]:
-            compressed.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(file), str(compressed / file.name))
+        for file in folder.iterdir():
+            if file.is_dir():
+                continue
 
-        elif file.suffix.lower() in [".csv", ".xls", ".xlsx"]:
-            financial.mkdir(parents=True, exist_ok=True)
-            shutil.move(str(file), str(financial / file.name))
+            ext = file.suffix.lower()
+
+            if ext in user_rule:
+                target_folder = folder / user_rule[ext]
+
+                target_folder.mkdir(parents=True, exist_ok=True)
+
+                destination = target_folder / file.name
+                try:
+                    shutil.move(str(file), str(destination))
+                    print(f"Moved {file.name} to {target_folder}")
+                except shutil.Error:
+                    print(f"File {file.name} already exists in {target_folder}. Skipping.")
+
+
+            elif ext in ext_to_folder:
+                target_folder = folder / ext_to_folder[ext]
+
+                target_folder.mkdir(parents=True, exist_ok=True)
+
+                destination = target_folder / file.name
+                try:
+                    shutil.move(str(file), str(destination))
+                    print(f"Moved {file.name} to {target_folder}")
+                except shutil.Error:
+                    print(f"File {file.name} already exists in {target_folder}. Skipping.")
+    print(f"Organised {folder} successfully.")
+
 
 elif user_option == "c":
     print("Continuously organising this folder...")
+    print("Enter Ctrl+C to stop this process.")
+    time.sleep(5)
     try:
+        for folder_name, extensions in categories.items():
+                for ext in extensions:
+                    ext_to_folder[ext] = folder_name
+
         while True:
+            
             for file in folder.iterdir():
                 if file.is_dir():
                     continue
+                ext = file.suffix.lower()
 
-                elif file.suffix.lower() in [".txt", ".pdf", ".docx", ".xlsx", ".pptx"]:
-                    document.mkdir(parents=True, exist_ok=True)
-                    shutil.move(file, (document / file.name))
+                if ext in ext_to_folder:
+                    target_folder = folder / ext_to_folder[ext]
 
-                elif file.suffix.lower() in [".jpg", ".jpeg", ".png", ".gif", ".bmp"]:
-                    pictures.mkdir(parents=True, exist_ok=True)
-                    shutil.move(str(file), str(pictures / file.name))
+                    target_folder.mkdir(parents=True, exist_ok=True)
 
-                elif file.suffix.lower() in [".zip", ".rar", ".tar", ".gz"]:
-                    compressed.mkdir(parents=True, exist_ok=True)
-                    shutil.move(str(file), str(compressed / file.name))
+                    destination = target_folder / file.name
+                    try:
+                        shutil.move(str(file), str(destination))
+                        print(f"Moved {file.name} to {target_folder}")
+                    except shutil.Error:
+                        print(f"File {file.name} already exists in {target_folder}. Skipping.")
 
-                elif file.suffix.lower() in [".csv", ".xls", ".xlsx"]:
-                    financial.mkdir(parents=True, exist_ok=True)
-                    shutil.move(str(file), str(financial / file.name))
+            print(f"Organised {folder} successfully.")
+            time.sleep(2)         
 
-                time.sleep(1)
-        
     except KeyboardInterrupt:
         print("\nContinuous organisation stopped by user.")
         exit()
-      
+
 else:
     print(
         "Invalid option. Please enter 'y' to organise  once or 'c' for continuous organisation."
